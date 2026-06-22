@@ -389,7 +389,13 @@ IMPORTANTE:
 - Os valores do orçamento devem ser realistas e somar o total pretendido
 - Adapte o formato às exigências específicas do edital "${edital}"
 - Inclua métricas e indicadores sempre que possível
-- O cronograma deve ser realista (geralmente 6 a 12 meses)`;
+- O cronograma deve ser realista (geralmente 6 a 12 meses)
+
+16. SUGESTÕES DE OUTROS EDITAIS E FUNDOS
+    - Ao final do projeto, sugira pelo menos 5 outros editais, leis de incentivo ou fundos de cultura (nacionais e internacionais) que possam ser compatíveis com este projeto
+    - Inclua editais internacionais/globais quando a obra puder atender os critérios (ex: estar em inglês, ser inédita, ter caráter inovador)
+    - Para cada sugestão, informe: nome do edital/fundo, país/região, link (se conhecido), requisitos principais, e por que o projeto se encaixa
+    - Considere fundos como: British Council, Goethe-Institut, Iberescena, UNESCO, APAP, National Endowment for the Arts, Fondo Nacional de las Artes, entre outros`;
 
         return prompt;
     }
