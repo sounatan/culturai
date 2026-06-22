@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Gerador de Projetos Culturais com IA</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Hero Section -->
+    <header class="hero">
+        <nav class="navbar">
+            <div class="logo">
+                <span class="logo-icon">🎭</span>
+                <span class="logo-text">CulturAI</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#como-funciona">Como Funciona</a></li>
+                <li><a href="#formulario">Criar Projeto</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+        </nav>
+        <div class="hero-content">
+            <h1>Transforme sua ideia em um <span class="highlight">Projeto Cultural</span> completo</h1>
+            <p class="hero-subtitle">Use inteligência artificial para gerar projetos culturais prontos para submissão em editais, leis de incentivo e fundos de cultura.</p>
+            <a href="#formulario" class="cta-button">Começar Agora →</a>
+        </div>
+    </header>
+
+    <!-- Como Funciona -->
+    <section id="como-funciona" class="section how-it-works">
+        <h2>Como Funciona</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Preencha o Formulário</h3>
+                <p>Informe a modalidade artística, o edital/lei de incentivo, e descreva detalhadamente o que você pretende fazer.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>IA Pesquisa o Edital</h3>
+                <p>Nossa IA analisa as exigências do edital ou lei de incentivo informada para moldar o projeto às especificações.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Projeto Gerado</h3>
+                <p>Receba um projeto cultural completo com justificativa, metas, cronograma, orçamento e plano de ação.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulário -->
+    <section id="formulario" class="section form-section">
+        <h2>Crie seu Projeto Cultural</h2>
+        <p class="section-subtitle">Preencha as informações abaixo com o máximo de detalhes possível. Quanto mais informações, melhor será o projeto gerado.</p>
+
+        <form id="cultural-form" class="cultural-form">
+            <!-- Nome do Proponente -->
+            <div class="form-group">
+                <label for="proponente-nome">👤 Nome do Proponente</label>
+                <input type="text" id="proponente-nome" placeholder="Nome completo ou razão social..." required>
+            </div>
+
+            <!-- Pessoa Física ou Jurídica -->
+            <div class="form-group">
+                <label for="tipo-pessoa">🏢 Tipo de Proponente</label>
+                <select id="tipo-pessoa" required>
+                    <option value="">Selecione...</option>
+                    <option value="pessoa-fisica">Pessoa Física (CPF)</option>
+                    <option value="pessoa-juridica">Pessoa Jurídica (CNPJ)</option>
+                    <option value="mei">MEI</option>
+                    <option value="coletivo">Coletivo / Grupo Informal</option>
+                </select>
+            </div>
+
+            <!-- Nome do Projeto -->
+            <div class="form-group">
+                <label for="nome-projeto">✏️ Nome do Projeto (opcional)</label>
+                <input type="text" id="nome-projeto" placeholder="Se já tem um nome em mente, informe aqui. Caso contrário, a IA sugerirá um.">
+                <small>Deixe em branco se quiser que a IA sugira um nome criativo.</small>
+            </div>
+
+            <!-- Modalidade Artística -->
+            <div class="form-group">
+                <label for="modalidade">🎨 Modalidade Artística</label>
+                <select id="modalidade" required>
+                    <option value="">Selecione a modalidade...</option>
+                    <option value="teatro">Teatro</option>
+                    <option value="danca">Dança</option>
+                    <option value="musica">Música</option>
+                    <option value="artes-visuais">Artes Visuais</option>
+                    <option value="literatura">Literatura</option>
+                    <option value="cinema-audiovisual">Cinema / Audiovisual</option>
+                    <option value="circo">Circo</option>
+                    <option value="patrimonio-cultural">Patrimônio Cultural</option>
+                    <option value="cultura-popular">Cultura Popular / Folclore</option>
+                    <option value="cultura-digital">Cultura Digital</option>
+                    <option value="multidisciplinar">Multidisciplinar</option>
+                    <option value="outra">Outra</option>
+                </select>
+            </div>
+
+            <!-- Modalidade Outra -->
+            <div class="form-group hidden" id="modalidade-outra-group">
+                <label for="modalidade-outra">Especifique a modalidade:</label>
+                <input type="text" id="modalidade-outra" placeholder="Ex: Performance, Instalação interativa...">
+            </div>
+
+            <!-- Tipo de Projeto -->
+            <div class="form-group">
+                <label for="tipo-projeto">🎬 Tipo de Projeto</label>
+                <select id="tipo-projeto" required>
+                    <option value="">Selecione o tipo...</option>
+                    <option value="montagem-espetaculo">Montagem de Espetáculo</option>
+                    <option value="circulacao">Circulação / Itinerância</option>
+                    <option value="lancamento-livro">Lançamento de Livro</option>
+                    <option value="exposicao">Exposição</option>
+                    <option value="festival">Festival / Mostra</option>
+                    <option value="oficina-workshop">Oficina / Workshop</option>
+                    <option value="producao-audiovisual">Produção Audiovisual</option>
+                    <option value="pesquisa">Pesquisa</option>
+                    <option value="residencia-artistica">Residência Artística</option>
+                    <option value="manutencao-espaco">Manutenção de Espaço Cultural</option>
+                    <option value="outro">Outro</option>
+                </select>
+            </div>
+
+            <!-- Tipo Outro -->
+            <div class="form-group hidden" id="tipo-outro-group">
+                <label for="tipo-outro">Especifique o tipo:</label>
+                <input type="text" id="tipo-outro" placeholder="Ex: Intercâmbio cultural, Documentário...">
+            </div>
+
+            <!-- Edital / Lei de Incentivo -->
+            <div class="form-group">
+                <label for="edital">📋 Edital / Lei de Incentivo / Fundo</label>
+                <input type="text" id="edital" placeholder="Ex: Lei Rouanet, ProAC, Edital Funarte 2024, Lei Paulo Gustavo..." required>
+                <small>Informe o nome do edital, lei ou fundo ao qual pretende submeter o projeto.</small>
+            </div>
+
+            <!-- Localidade -->
+            <div class="form-group">
+                <label for="localidade">📍 Localidade de Execução</label>
+                <input type="text" id="localidade" placeholder="Ex: São Paulo - SP, Região Metropolitana de BH...">
+                <small>Onde o projeto será executado? Isso ajuda a contextualizar o projeto.</small>
+            </div>
+
+            <!-- Público-alvo -->
+            <div class="form-group">
+                <label for="publico-alvo">👥 Público-Alvo</label>
+                <input type="text" id="publico-alvo" placeholder="Ex: Jovens de periferia, público em geral, crianças de 6 a 12 anos...">
+            </div>
+
+            <!-- Valor Solicitado -->
+            <div class="form-group">
+                <label for="valor">💰 Valor Pretendido (R$)</label>
+                <input type="text" id="valor" placeholder="Ex: 150.000,00">
+                <small>Valor aproximado que pretende solicitar.</small>
+            </div>
+
+            <!-- Descrição Detalhada -->
+            <div class="form-group">
+                <label for="descricao">📝 Descrição Detalhada do Projeto</label>
+                <textarea id="descricao" rows="8" placeholder="Descreva com o máximo de detalhes o que você pretende fazer. Inclua:&#10;- O que é o projeto (sinopse, conceito)&#10;- Quantas apresentações/atividades&#10;- Equipe envolvida&#10;- Diferenciais do projeto&#10;- Impacto social ou cultural esperado&#10;- Qualquer informação relevante..." required></textarea>
+                <small>Quanto mais detalhes você fornecer, mais preciso e personalizado será o projeto gerado pela IA.</small>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="form-group">
+                <label for="info-adicional">📎 Informações Adicionais (opcional)</label>
+                <textarea id="info-adicional" rows="4" placeholder="Histórico do grupo/artista, premiações, projetos anteriores, contrapartidas sociais que pretende oferecer..."></textarea>
+            </div>
+
+            <!-- Upload de Materiais -->
+            <div class="form-group">
+                <label for="materiais">📁 Upload de Materiais de Apoio (opcional)</label>
+                <div class="upload-area" id="upload-area">
+                    <input type="file" id="materiais" multiple accept=".pdf,.doc,.docx,.txt,.rtf,.jpg,.jpeg,.png">
+                    <div class="upload-placeholder">
+                        <span class="upload-icon">📄</span>
+                        <p>Arraste arquivos aqui ou <span class="upload-link">clique para selecionar</span></p>
+                        <small>Currículo, clipping, roteiro, portfólio, cartas de apoio, etc.<br>Formatos aceitos: PDF, DOC, DOCX, TXT, RTF, JPG, PNG (máx. 5 arquivos, 10MB cada)</small>
+                    </div>
+                </div>
+                <div id="file-list" class="file-list"></div>
+            </div>
+
+            <button type="submit" class="submit-button" id="submit-btn">
+                <span class="btn-text">✨ Gerar Projeto Cultural com IA</span>
+                <span class="btn-loading hidden">⏳ Gerando projeto... (pode levar até 2 minutos)</span>
+            </button>
+        </form>
+    </section>
+
+    <!-- Resultado -->
+    <section id="resultado" class="section result-section hidden">
+        <h2>📄 Seu Projeto Cultural</h2>
+        <div class="result-actions">
+            <button id="copy-btn" class="action-button">📋 Copiar Texto</button>
+            <button id="download-btn" class="action-button">⬇️ Baixar como .txt</button>
+            <button id="new-project-btn" class="action-button secondary">🔄 Novo Projeto</button>
+        </div>
+        <p class="result-content-hint">💡 Você pode editar o texto diretamente abaixo — clique e modifique o que quiser.</p>
+        <div id="result-content" class="result-content" contenteditable="true"></div>
+
+        <!-- Chat de Ajustes -->
+        <div class="refinement-section">
+            <h3>💬 Solicitar Ajustes</h3>
+            <p class="refinement-description">Não ficou como esperava? Peça ajustes específicos abaixo e a IA irá refinar o projeto.</p>
+            <div class="refinement-input-group">
+                <textarea id="refinement-input" rows="3" placeholder="Ex: 'Aumente a justificativa', 'Troque o nome do projeto para...', 'Adicione mais atividades de contrapartida social'..."></textarea>
+                <button id="refinement-btn" class="submit-button refinement-button">
+                    <span class="refine-btn-text">🔄 Refinar Projeto</span>
+                    <span class="refine-btn-loading hidden">⏳ Refinando...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Disclaimer -->
+        <div class="disclaimer-box">
+            <h4>⚠️ Aviso Importante</h4>
+            <p>Este projeto foi gerado por inteligência artificial como <strong>ferramenta de apoio</strong> à elaboração do seu projeto cultural. O texto gerado é uma base inicial e <strong>não substitui a revisão humana</strong>.</p>
+            <ul>
+                <li>📝 <strong>Revise e edite</strong> o conteúdo para que fique com a sua cara e a do seu grupo/coletivo.</li>
+                <li>🔍 <strong>Verifique</strong> se os dados, valores e informações estão corretos e atualizados.</li>
+                <li>🎨 <strong>Personalize</strong> o texto para que soe natural e autêntico — editais valorizam projetos com identidade.</li>
+                <li>⚖️ <strong>Não nos responsabilizamos</strong> pelo resultado da submissão, aprovação ou qualquer consequência decorrente do uso deste material.</li>
+            </ul>
+            <p class="disclaimer-final">Use esta ferramenta como ponto de partida. O toque final é seu! 💜</p>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section faq-section">
+        <h2>Perguntas Frequentes</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>É gratuito?</h3>
+                <p>Sim! A ferramenta é totalmente gratuita para uso. Basta preencher o formulário e gerar seu projeto.</p>
+            </div>
+            <div class="faq-item">
+                <h3>O projeto gerado está pronto para submissão?</h3>
+                <p>O projeto serve como uma base sólida e bem estruturada. Recomendamos fortemente que você revise, personalize e ajuste o conteúdo para que fique com a sua identidade antes de submeter.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Quais editais são suportados?</h3>
+                <p>A IA tem conhecimento sobre os principais mecanismos de fomento à cultura no Brasil: Lei Rouanet, ProAC, Lei Paulo Gustavo, Funarte, editais estaduais e municipais, entre outros.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Posso editar o projeto depois de gerado?</h3>
+                <p>Sim! Você pode editar diretamente no texto gerado, pedir ajustes via chat com a IA, e depois baixar ou copiar o resultado final.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Que materiais posso enviar?</h3>
+                <p>Currículo, clipping de mídia, roteiro, portfólio, cartas de apoio — qualquer material em PDF, DOC, TXT, RTF ou imagem que ajude a IA a entender melhor o seu perfil e projeto.</p>
+            </div>
+            <div class="faq-item">
+                <h3>Vocês se responsabilizam pelo projeto?</h3>
+                <p>Não. A ferramenta é apenas um apoio à criação. A responsabilidade pelo conteúdo submetido aos editais é inteiramente do proponente. Revise tudo com cuidado.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>CulturAI — Feito com 💜 para democratizar o acesso à cultura</p>
+        <p class="footer-note">Este é um projeto open source. Contribua no <a href="#" target="_blank">GitHub</a>.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
