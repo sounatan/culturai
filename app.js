@@ -229,57 +229,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // === Download PDF ===
+    // === Download PDF (via impressão do navegador) ===
     downloadPdfBtn.addEventListener('click', async () => {
         const text = resultContent.innerText;
         projectVersion++;
 
-        try {
-            // Criar elemento temporário formatado para PDF
-            const tempDiv = document.createElement('div');
-            tempDiv.style.fontFamily = 'Arial, sans-serif';
-            tempDiv.style.fontSize = '12px';
-            tempDiv.style.lineHeight = '1.6';
-            tempDiv.style.color = '#000';
-            tempDiv.style.padding = '20px';
-            tempDiv.style.maxWidth = '700px';
+        // Salvar na planilha
+        await saveProject(text, `download-v${projectVersion}`);
 
-            const lines = text.split('\n');
-            for (const line of lines) {
-                const p = document.createElement('p');
-                const trimmed = line.trim();
-                const isHeading = /^\d+[\.\)]\s/.test(trimmed) || (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 80);
-                if (isHeading) {
-                    p.style.fontWeight = 'bold';
-                    p.style.fontSize = '14px';
-                    p.style.marginTop = '16px';
-                }
-                p.textContent = line;
-                tempDiv.appendChild(p);
+        // Abrir janela de impressão com o conteúdo formatado
+        const printWindow = window.open('', '_blank');
+        const lines = text.split('\n');
+        let htmlContent = '';
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) { htmlContent += '<br>'; continue; }
+            const isHeading = /^\d+[\.\)]\s/.test(trimmed) || (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 80);
+            if (isHeading) {
+                htmlContent += `<h2 style="margin-top:20px;margin-bottom:8px;font-size:14px;">${trimmed}</h2>`;
+            } else {
+                htmlContent += `<p style="margin:4px 0;font-size:12px;line-height:1.6;">${trimmed}</p>`;
             }
-
-            document.body.appendChild(tempDiv);
-
-            const opt = {
-                margin: [15, 15, 15, 15],
-                filename: `projeto-cultural-v${projectVersion}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            await html2pdf().set(opt).from(tempDiv).save();
-            document.body.removeChild(tempDiv);
-
-            // Salvar na planilha ao fazer download
-            await saveProject(text, `download-v${projectVersion}`);
-
-            downloadPdfBtn.textContent = '✅ PDF baixado!';
-            setTimeout(() => { downloadPdfBtn.textContent = '⬇️ Baixar PDF'; }, 2000);
-        } catch (error) {
-            console.error('Erro ao gerar PDF:', error);
-            alert('Erro ao gerar PDF. Tente o DOCX.');
         }
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html><head><title>Projeto Cultural</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; color: #000; }
+                h2 { color: #333; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+                @media print { body { padding: 20px; } }
+            </style>
+            </head><body>${htmlContent}</body></html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => { printWindow.print(); }, 500);
+
+        downloadPdfBtn.textContent = '✅ PDF aberto!';
+        setTimeout(() => { downloadPdfBtn.textContent = '⬇️ Baixar PDF'; }, 2000);
     });
 
     // === Novo Projeto ===
