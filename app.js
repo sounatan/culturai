@@ -456,7 +456,8 @@ IMPORTANTE:
 - Valores do orçamento realistas, somando o total pretendido
 - Adapte ao edital "${edital}"
 - Inclua métricas e indicadores
-- Cronograma realista (6 a 12 meses)`;
+- Cronograma realista (6 a 12 meses)
+- IMPORTANTE: Gere o projeto COMPLETO, sem cortar nenhuma seção. Você tem espaço suficiente (até 32.000 tokens). Não resuma nem abrevie. Todas as 16 seções devem ser detalhadas.`;
 
         return prompt;
     }
@@ -466,7 +467,7 @@ IMPORTANTE:
         const response = await fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 16000, temperature: 0.7 })
+            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 32000, temperature: 0.7 })
         });
 
         if (!response.ok) {
