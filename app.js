@@ -2,7 +2,7 @@
 
 // URL do Cloudflare Worker (proxy seguro para a API da OpenAI)
 // Substitua pela URL do seu worker após o deploy
-const WORKER_URL = 'https://culturai-api.SEU-USUARIO.workers.dev';
+const WORKER_URL = 'https://culturai-api.sounatan1.workers.dev';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('cultural-form');
