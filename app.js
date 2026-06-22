@@ -435,11 +435,21 @@ ESTRUTURA DO PROJETO (adapte conforme as exigências do edital):
 
 15. CURRÍCULO DO PROPONENTE / HISTÓRICO
 
-16. SUGESTÕES DE OUTROS EDITAIS E FUNDOS
-    - Sugira pelo menos 5 outros editais, leis de incentivo ou fundos (nacionais E internacionais) compatíveis com este projeto
-    - Inclua editais globais quando a obra puder atender os critérios (ex: estar em inglês, ser inédita, caráter inovador)
-    - Para cada sugestão: nome, país/região, link (se conhecido), requisitos principais, e por que o projeto se encaixa
-    - Considere: British Council, Goethe-Institut, Iberescena, UNESCO, APAP, National Endowment for the Arts, Fondo Nacional de las Artes, entre outros
+16. SUGESTÕES DE OUTROS EDITAIS, FUNDOS E OPORTUNIDADES
+    - Sugira pelo menos 8 outros editais, leis de incentivo, fundos, prêmios ou residências (nacionais E internacionais) compatíveis com este projeto
+    - PRIORIZE editais e oportunidades que costumam abrir inscrições periodicamente (informe o período típico de abertura, ex: "abre inscrições geralmente entre março e maio")
+    - Inclua editais internacionais/globais quando a obra puder atender os critérios (ex: tradução para inglês, caráter inovador, ineditismo)
+    - Para cada sugestão, informe obrigatoriamente:
+      * Nome do edital/fundo/prêmio
+      * Instituição responsável
+      * País/região
+      * Site oficial (URL completa para o proponente pesquisar)
+      * Período típico de inscrições (quando costuma abrir)
+      * Valor médio disponível (se conhecido)
+      * Requisitos principais
+      * Por que este projeto se encaixa
+    - Considere fontes como: British Council, Goethe-Institut, Iberescena, UNESCO, APAP, National Endowment for the Arts, Fondo Nacional de las Artes, Fondation de France, Prins Claus Fund, Ford Foundation, Itaú Cultural, SESC, SESI, Funarte, editais estaduais, municipais, etc.
+    - Inclua também plataformas de crowdfunding cultural se relevante (Catarse, Benfeitoria, etc.)
 
 IMPORTANTE:
 - Linguagem formal e técnica adequada a editais culturais
@@ -500,7 +510,7 @@ IMPORTANTE:
                 await fetch(GOOGLE_SHEETS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify(record)
                 });
                 console.log(`Projeto salvo (${type}, v${projectVersion})`);

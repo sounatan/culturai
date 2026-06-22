@@ -8,12 +8,19 @@
 // 3. Implantar → Nova implantação → App da Web
 //    - Executar como: Eu | Acesso: Qualquer pessoa
 // 4. Copie a URL e cole no app.js (GOOGLE_SHEETS_URL)
+//
+// IMPORTANTE: Quando atualizar o código, vá em:
+//   Implantar → Gerenciar implantações → Editar (lápis)
+//   → Versão: Nova versão → Implantar
 // ========================================================
 
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
+    
+    // Parsear o body (pode vir como JSON ou text/plain contendo JSON)
+    var rawData = e.postData.contents;
+    var data = JSON.parse(rawData);
     
     // Criar cabeçalhos se planilha vazia
     if (sheet.getLastRow() === 0) {
@@ -56,6 +63,10 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
+    // Log do erro para debug
+    Logger.log('Erro doPost: ' + error.toString());
+    Logger.log('PostData: ' + (e.postData ? e.postData.contents : 'vazio'));
+    
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'error', message: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
