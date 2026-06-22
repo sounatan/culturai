@@ -4,7 +4,7 @@
 const WORKER_URL = 'https://culturai-api.sounatan1.workers.dev';
 
 // Google Sheets (registro de projetos)
-const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwu3z2lFA7oXVNTUG7HqclIykyicXvOk0Q-uK8zDKfD3O1BUu6tRBRhVFrKC9M_mvIT_Q/exec';
+const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyg8Iu-zVX-cCer8Sjh-s9RI9XQ8HbsR4sLYGurR9Qqj0T0cvm8LEQhjcdqj9aVpjmWCA/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('cultural-form');
