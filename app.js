@@ -457,7 +457,7 @@ IMPORTANTE:
 - Adapte ao edital "${edital}"
 - Inclua métricas e indicadores
 - Cronograma realista (6 a 12 meses)
-- IMPORTANTE: Gere o projeto COMPLETO, sem cortar nenhuma seção. Você tem espaço suficiente (até 32.000 tokens). Não resuma nem abrevie. Todas as 16 seções devem ser detalhadas.`;
+- IMPORTANTE: Você tem um limite de 12.000 tokens para a resposta. Gere TODAS as 16 seções, mas seja objetivo e direto em cada uma. Priorize conteúdo útil sem ser prolixo. Cada seção deve ter substância suficiente para uso real, mas sem repetições ou preenchimento desnecessário. NÃO corte seções — é melhor ser conciso em cada uma do que deixar alguma de fora.`;
 
         return prompt;
     }
@@ -467,7 +467,7 @@ IMPORTANTE:
         const response = await fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 32000, temperature: 0.7 })
+            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 12000, temperature: 0.7 })
         });
 
         if (!response.ok) {
