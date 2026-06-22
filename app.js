@@ -410,7 +410,7 @@ IMPORTANTE:
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
             if (response.status === 401) throw new Error('Erro de autenticação. Entre em contato com o administrador.');
-            if (response.status === 429) throw new Error('Muitas requisições. Aguarde um momento e tente novamente.');
+            if (response.status === 429) { const msg = error?.error?.code === 'insufficient_quota' ? 'Serviço indisponível no momento. Entre em contato com o administrador.' : 'Muitas requisições. Aguarde um momento e tente novamente.'; throw new Error(msg); }
             if (response.status === 402 || error?.error?.code === 'insufficient_quota') throw new Error('Serviço temporariamente indisponível. Tente mais tarde.');
             throw new Error(error?.error?.message || `Erro ${response.status}. Tente novamente.`);
         }
