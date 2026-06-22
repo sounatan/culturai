@@ -426,7 +426,7 @@ IMPORTANTE:
     }
 
     // === Salvar Projeto (Google Sheets) ===
-    const GOOGLE_SHEETS_URL = 'COLE_A_URL_DO_SEU_GOOGLE_APPS_SCRIPT_AQUI';
+    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwu3z2lFA7oXVNTUG7HqclIykyicXvOk0Q-uK8zDKfD3O1BUu6tRBRhVFrKC9M_mvIT_Q/exec';
 
     async function saveProject(projectContent, type, metadata = null) {
         try {
@@ -451,7 +451,7 @@ IMPORTANTE:
             localStorage.setItem('culturai_projects', JSON.stringify(savedProjects));
 
             // Enviar para Google Sheets
-            if (GOOGLE_SHEETS_URL && GOOGLE_SHEETS_URL !== 'COLE_A_URL_DO_SEU_GOOGLE_APPS_SCRIPT_AQUI') {
+            if (GOOGLE_SHEETS_URL) {
                 await fetch(GOOGLE_SHEETS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
