@@ -1,27 +1,15 @@
 // ========================================================
-// CLOUDFLARE WORKER — Proxy com fallback OpenAI → Gemini
+// CLOUDFLARE WORKER — Proxy OpenAI/Gemini + Google Sheets
 // ========================================================
 //
-// INSTRUÇÕES DE DEPLOY:
+// VARIÁVEIS DE AMBIENTE (Settings → Variables and Secrets):
+//   - OPENAI_API_KEY: chave OpenAI (Secret)
+//   - GEMINI_API_KEY: chave Google Gemini (Secret)
+//   - GOOGLE_SHEETS_URL: URL do Google Apps Script (pode ser plain text)
 //
-// 1. Acesse https://dash.cloudflare.com
-// 2. Workers & Pages → seu worker "culturai-api"
-// 3. Clique em "Edit code" e cole TODO este código
-// 4. Clique em "Deploy"
-// 5. Vá em "Settings" → "Variables and Secrets"
-// 6. Adicione DUAS variáveis (ambas como Secret/Encrypt):
-//    - OPENAI_API_KEY: sua chave sk-proj-...
-//    - GEMINI_API_KEY: sua chave do Google AI Studio
-//
-// Para obter a chave do Gemini (grátis):
-//    - Acesse https://aistudio.google.com/apikey
-//    - Clique em "Create API Key"
-//    - Copie a chave gerada
-//
-// COMPORTAMENTO:
-// - Tenta OpenAI primeiro
-// - Se OpenAI falhar (quota, erro, timeout), usa Gemini como fallback
-// - Free tier do Gemini: ~250 requisições/dia com Gemini 2.5 Flash
+// ROTAS:
+//   POST / → gera projeto (proxy para OpenAI/Gemini)
+//   POST /save → salva projeto no Google Sheets
 // ========================================================
 
 export default {
@@ -43,64 +31,112 @@ export default {
       });
     }
 
-    try {
-      const body = await request.json();
+    const url = new URL(request.url);
 
-      if (!body.messages || !Array.isArray(body.messages)) {
-        return new Response(JSON.stringify({ error: 'Requisição inválida' }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+    // Rota: salvar no Google Sheets
+    if (url.pathname === '/save') {
+      return await handleSaveToSheets(request, env, corsHeaders);
+    }
 
-      // Tentar OpenAI primeiro
-      if (env.OPENAI_API_KEY) {
-        try {
-          const openaiResult = await callOpenAI(body, env.OPENAI_API_KEY);
-          if (openaiResult.ok) {
-            return new Response(JSON.stringify(openaiResult.data), {
-              status: 200,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-        } catch (e) {
-          // OpenAI falhou, tentar Gemini
-          console.log('OpenAI falhou, tentando Gemini:', e.message);
-        }
-      }
+    // Rota padrão: gerar projeto via IA
+    return await handleGenerate(request, env, corsHeaders);
+  },
+};
 
-      // Fallback: Gemini
-      if (env.GEMINI_API_KEY) {
-        try {
-          const geminiResult = await callGemini(body, env.GEMINI_API_KEY);
-          if (geminiResult.ok) {
-            // Formatar resposta do Gemini no mesmo formato que OpenAI
-            return new Response(JSON.stringify(geminiResult.data), {
-              status: 200,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-        } catch (e) {
-          console.log('Gemini também falhou:', e.message);
-        }
-      }
+// === GERAR PROJETO ===
+async function handleGenerate(request, env, corsHeaders) {
+  try {
+    const body = await request.json();
 
-      // Ambos falharam
-      return new Response(JSON.stringify({
-        error: { message: 'Serviço temporariamente indisponível. Tente novamente em alguns minutos.' }
-      }), {
-        status: 503,
+    if (!body.messages || !Array.isArray(body.messages)) {
+      return new Response(JSON.stringify({ error: 'Requisição inválida' }), {
+        status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
 
-    } catch (error) {
-      return new Response(JSON.stringify({ error: 'Erro interno do servidor' }), {
+    // Tentar OpenAI primeiro
+    if (env.OPENAI_API_KEY) {
+      try {
+        const result = await callOpenAI(body, env.OPENAI_API_KEY);
+        if (result.ok) {
+          return new Response(JSON.stringify(result.data), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (e) {
+        console.log('OpenAI falhou:', e.message);
+      }
+    }
+
+    // Fallback: Gemini
+    if (env.GEMINI_API_KEY) {
+      try {
+        const result = await callGemini(body, env.GEMINI_API_KEY);
+        if (result.ok) {
+          return new Response(JSON.stringify(result.data), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (e) {
+        console.log('Gemini falhou:', e.message);
+      }
+    }
+
+    return new Response(JSON.stringify({
+      error: { message: 'Serviço temporariamente indisponível.' }
+    }), {
+      status: 503,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Erro interno' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
+
+// === SALVAR NO GOOGLE SHEETS ===
+async function handleSaveToSheets(request, env, corsHeaders) {
+  try {
+    const body = await request.json();
+    const sheetsUrl = env.GOOGLE_SHEETS_URL;
+
+    if (!sheetsUrl) {
+      return new Response(JSON.stringify({ error: 'Google Sheets não configurado' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-  },
-};
+
+    // Enviar para o Google Apps Script via POST (server-to-server, sem CORS)
+    const response = await fetch(sheetsUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      redirect: 'follow',
+    });
+
+    const text = await response.text();
+    let result;
+    try { result = JSON.parse(text); } catch { result = { status: 'ok', raw: text }; }
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Erro ao salvar: ' + error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+}
 
 // === OpenAI ===
 async function callOpenAI(body, apiKey) {
@@ -118,17 +154,13 @@ async function callOpenAI(body, apiKey) {
     }),
   });
 
-  if (!response.ok) {
-    throw new Error(`OpenAI error: ${response.status}`);
-  }
-
+  if (!response.ok) throw new Error(`OpenAI: ${response.status}`);
   const data = await response.json();
   return { ok: true, data };
 }
 
 // === Gemini ===
 async function callGemini(body, apiKey) {
-  // Converter formato OpenAI messages → Gemini contents
   const contents = convertMessagesToGemini(body.messages);
 
   const response = await fetch(
@@ -137,7 +169,7 @@ async function callGemini(body, apiKey) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: contents,
+        contents,
         generationConfig: {
           temperature: body.temperature || 0.7,
           maxOutputTokens: body.max_tokens || 32000,
@@ -146,50 +178,30 @@ async function callGemini(body, apiKey) {
     }
   );
 
-  if (!response.ok) {
-    throw new Error(`Gemini error: ${response.status}`);
-  }
-
+  if (!response.ok) throw new Error(`Gemini: ${response.status}`);
   const geminiData = await response.json();
-
-  // Extrair texto da resposta do Gemini
   const text = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
-  // Formatar no mesmo padrão da OpenAI para o frontend não precisar mudar
-  const formattedData = {
-    choices: [
-      {
-        message: {
-          role: 'assistant',
-          content: text,
-        },
-      },
-    ],
+  return {
+    ok: true,
+    data: {
+      choices: [{ message: { role: 'assistant', content: text } }],
+    },
   };
-
-  return { ok: true, data: formattedData };
 }
 
-// Converter mensagens do formato OpenAI para Gemini
 function convertMessagesToGemini(messages) {
   const contents = [];
   let systemInstruction = '';
 
   for (const msg of messages) {
     if (msg.role === 'system') {
-      // Gemini não tem "system" role — concatenar com a primeira mensagem do user
       systemInstruction += msg.content + '\n\n';
     } else if (msg.role === 'user') {
-      contents.push({
-        role: 'user',
-        parts: [{ text: systemInstruction + msg.content }],
-      });
-      systemInstruction = ''; // Limpar após usar
+      contents.push({ role: 'user', parts: [{ text: systemInstruction + msg.content }] });
+      systemInstruction = '';
     } else if (msg.role === 'assistant') {
-      contents.push({
-        role: 'model',
-        parts: [{ text: msg.content }],
-      });
+      contents.push({ role: 'model', parts: [{ text: msg.content }] });
     }
   }
 

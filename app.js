@@ -4,7 +4,7 @@
 const WORKER_URL = 'https://culturai-api.sounatan1.workers.dev';
 
 // Google Sheets (registro de projetos)
-const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyg8Iu-zVX-cCer8Sjh-s9RI9XQ8HbsR4sLYGurR9Qqj0T0cvm8LEQhjcdqj9aVpjmWCA/exec';
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('cultural-form');
@@ -506,34 +506,16 @@ IMPORTANTE:
                 content: projectContent
             };
 
-            // Enviar para Google Sheets via form submit (método mais confiável)
-            if (GOOGLE_SHEETS_URL) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = GOOGLE_SHEETS_URL;
-                form.target = 'sheets-iframe';
-                form.style.display = 'none';
-
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'data';
-                input.value = JSON.stringify(record);
-                form.appendChild(input);
-
-                // Criar iframe oculto se não existir
-                let iframe = document.getElementById('sheets-iframe');
-                if (!iframe) {
-                    iframe = document.createElement('iframe');
-                    iframe.id = 'sheets-iframe';
-                    iframe.name = 'sheets-iframe';
-                    iframe.style.display = 'none';
-                    document.body.appendChild(iframe);
-                }
-
-                document.body.appendChild(form);
-                form.submit();
-                document.body.removeChild(form);
+            // Enviar para Google Sheets via Worker (rota /save)
+            try {
+                await fetch(WORKER_URL + '/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(record)
+                });
                 console.log(`Projeto salvo (${type}, v${projectVersion})`);
+            } catch (saveErr) {
+                console.warn('Falha ao salvar na planilha:', saveErr);
             }
         } catch (error) {
             console.warn('Erro ao salvar:', error);
