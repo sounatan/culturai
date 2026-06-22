@@ -5,21 +5,30 @@
 // INSTRUÇÕES:
 // 1. Na planilha, vá em Extensões → Apps Script
 // 2. Apague tudo e cole este código
-// 3. Implantar → Nova implantação → App da Web
+// 3. Implantar → Gerenciar implantações → Editar (lápis)
+//    → Versão: Nova versão → Implantar
+//    (ou Nova implantação se for a primeira vez)
 //    - Executar como: Eu | Acesso: Qualquer pessoa
 // 4. Copie a URL e cole no app.js (GOOGLE_SHEETS_URL)
-//
-// IMPORTANTE: Quando atualizar o código, vá em:
-//   Implantar → Gerenciar implantações → Editar (lápis)
-//   → Versão: Nova versão → Implantar
 // ========================================================
 
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     
-    // Parsear o body (pode vir como JSON ou text/plain contendo JSON)
-    var rawData = e.postData.contents;
+    var rawData;
+    
+    // Tentar parsear de diferentes formas (form submit ou fetch)
+    if (e.parameter && e.parameter.data) {
+      // Veio via form submit (campo hidden "data")
+      rawData = e.parameter.data;
+    } else if (e.postData && e.postData.contents) {
+      // Veio via fetch
+      rawData = e.postData.contents;
+    } else {
+      throw new Error('Nenhum dado recebido');
+    }
+    
     var data = JSON.parse(rawData);
     
     // Criar cabeçalhos se planilha vazia
@@ -63,9 +72,9 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (error) {
-    // Log do erro para debug
-    Logger.log('Erro doPost: ' + error.toString());
-    Logger.log('PostData: ' + (e.postData ? e.postData.contents : 'vazio'));
+    Logger.log('Erro: ' + error.toString());
+    Logger.log('Params: ' + JSON.stringify(e.parameter));
+    Logger.log('PostData: ' + (e.postData ? e.postData.contents : 'null'));
     
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'error', message: error.toString() }))

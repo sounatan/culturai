@@ -466,7 +466,7 @@ IMPORTANTE:
         const response = await fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 8000, temperature: 0.7 })
+            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 16000, temperature: 0.7 })
         });
 
         if (!response.ok) {
@@ -505,14 +505,33 @@ IMPORTANTE:
                 content: projectContent
             };
 
-            // Enviar para Google Sheets
+            // Enviar para Google Sheets via form submit (método mais confiável)
             if (GOOGLE_SHEETS_URL) {
-                await fetch(GOOGLE_SHEETS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify(record)
-                });
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = GOOGLE_SHEETS_URL;
+                form.target = 'sheets-iframe';
+                form.style.display = 'none';
+
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'data';
+                input.value = JSON.stringify(record);
+                form.appendChild(input);
+
+                // Criar iframe oculto se não existir
+                let iframe = document.getElementById('sheets-iframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'sheets-iframe';
+                    iframe.name = 'sheets-iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
                 console.log(`Projeto salvo (${type}, v${projectVersion})`);
             }
         } catch (error) {

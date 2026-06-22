@@ -113,7 +113,7 @@ async function callOpenAI(body, apiKey) {
     body: JSON.stringify({
       model: body.model || 'gpt-4o',
       messages: body.messages,
-      max_tokens: body.max_tokens || 8000,
+      max_tokens: body.max_tokens || 16000,
       temperature: body.temperature || 0.7,
     }),
   });
@@ -140,7 +140,7 @@ async function callGemini(body, apiKey) {
         contents: contents,
         generationConfig: {
           temperature: body.temperature || 0.7,
-          maxOutputTokens: body.max_tokens || 8000,
+          maxOutputTokens: body.max_tokens || 16000,
         },
       }),
     }
