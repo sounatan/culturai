@@ -201,7 +201,7 @@
         <h2>📄 Seu Projeto Cultural</h2>
         <div class="result-actions">
             <button id="copy-btn" class="action-button">📋 Copiar Texto</button>
-            <button id="download-btn" class="action-button">⬇️ Baixar como .txt</button>
+            <button id="download-docx-btn" class="action-button">⬇️ Baixar DOCX</button><button id="download-pdf-btn" class="action-button">⬇️ Baixar PDF</button>
             <button id="new-project-btn" class="action-button secondary">🔄 Novo Projeto</button>
         </div>
         <p class="result-content-hint">💡 Você pode editar o texto diretamente abaixo — clique e modifique o que quiser.</p>
@@ -271,6 +271,8 @@
         <p class="footer-note">Este é um projeto open source. Contribua no <a href="#" target="_blank">GitHub</a>.</p>
     </footer>
 
+    <script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

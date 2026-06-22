@@ -1,8 +1,10 @@
 // ===== CulturAI - Gerador de Projetos Culturais com IA =====
 
-// URL do Cloudflare Worker (proxy seguro para a API da OpenAI)
-// Substitua pela URL do seu worker após o deploy
+// URL do Cloudflare Worker (proxy seguro)
 const WORKER_URL = 'https://culturai-api.sounatan1.workers.dev';
+
+// Google Sheets (registro de projetos)
+const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwu3z2lFA7oXVNTUG7HqclIykyicXvOk0Q-uK8zDKfD3O1BUu6tRBRhVFrKC9M_mvIT_Q/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('cultural-form');
@@ -12,7 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultSection = document.getElementById('resultado');
     const resultContent = document.getElementById('result-content');
     const copyBtn = document.getElementById('copy-btn');
-    const downloadBtn = document.getElementById('download-btn');
+    const downloadDocxBtn = document.getElementById('download-docx-btn');
+    const downloadPdfBtn = document.getElementById('download-pdf-btn');
     const newProjectBtn = document.getElementById('new-project-btn');
     const refinementBtn = document.getElementById('refinement-btn');
     const refinementInput = document.getElementById('refinement-input');
@@ -20,6 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Estado
     let conversationHistory = [];
     let uploadedFiles = [];
+    let projectVersion = 0;
+    let currentMetadata = null;
 
     // === Campos condicionais ===
     const modalidadeSelect = document.getElementById('modalidade');
@@ -65,19 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const allowedExts = ['pdf', 'doc', 'docx', 'txt', 'rtf', 'jpg', 'jpeg', 'png'];
 
         for (const file of files) {
-            if (uploadedFiles.length >= maxFiles) {
-                alert(`Máximo de ${maxFiles} arquivos permitidos.`);
-                break;
-            }
-            if (file.size > maxSize) {
-                alert(`O arquivo "${file.name}" excede o limite de 10MB.`);
-                continue;
-            }
+            if (uploadedFiles.length >= maxFiles) { alert(`Máximo de ${maxFiles} arquivos.`); break; }
+            if (file.size > maxSize) { alert(`"${file.name}" excede 10MB.`); continue; }
             const ext = file.name.split('.').pop().toLowerCase();
-            if (!allowedExts.includes(ext)) {
-                alert(`Formato não suportado: "${file.name}". Use PDF, DOC, DOCX, TXT, RTF, JPG ou PNG.`);
-                continue;
-            }
+            if (!allowedExts.includes(ext)) { alert(`Formato não suportado: "${file.name}".`); continue; }
             uploadedFiles.push(file);
         }
         renderFileList();
@@ -89,27 +85,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = 'file-item';
             const sizeKB = (file.size / 1024).toFixed(0);
-            const icon = getFileIcon(file.name);
+            const icons = { pdf:'📕', doc:'📘', docx:'📘', txt:'📄', rtf:'📄', jpg:'🖼️', jpeg:'🖼️', png:'🖼️' };
+            const ext = file.name.split('.').pop().toLowerCase();
+            const icon = icons[ext] || '📎';
             item.innerHTML = `
                 <span class="file-item-name">${icon} ${file.name} <small>(${sizeKB}KB)</small></span>
                 <button class="file-item-remove" data-index="${index}" title="Remover">✕</button>
             `;
             fileList.appendChild(item);
         });
-
         fileList.querySelectorAll('.file-item-remove').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const idx = parseInt(e.target.dataset.index);
-                uploadedFiles.splice(idx, 1);
+                uploadedFiles.splice(parseInt(e.target.dataset.index), 1);
                 renderFileList();
             });
         });
-    }
-
-    function getFileIcon(filename) {
-        const ext = filename.split('.').pop().toLowerCase();
-        const icons = { pdf: '📕', doc: '📘', docx: '📘', txt: '📄', rtf: '📄', jpg: '🖼️', jpeg: '��️', png: '🖼️' };
-        return icons[ext] || '��';
     }
 
     async function readFileAsText(file) {
@@ -126,12 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const text = extractTextFromPDF(e.target.result);
-                    resolve(text || `[PDF anexado: ${file.name} — conteúdo não extraível diretamente]`);
+                    resolve(text || `[PDF anexado: ${file.name}]`);
                 };
-                reader.onerror = () => resolve(`[PDF anexado: ${file.name}]`);
+                reader.onerror = () => resolve(`[PDF: ${file.name}]`);
                 reader.readAsArrayBuffer(file);
             } else {
-                resolve(`[Documento anexado: ${file.name}. Inclua informações relevantes na descrição.]`);
+                resolve(`[Documento: ${file.name}. Inclua info relevante na descrição.]`);
             }
         });
     }
@@ -139,9 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function extractTextFromPDF(arrayBuffer) {
         try {
             const bytes = new Uint8Array(arrayBuffer);
-            let text = '';
-            let inText = false;
-            let buffer = '';
+            let text = '', inText = false, buffer = '';
             for (let i = 0; i < bytes.length; i++) {
                 const char = String.fromCharCode(bytes[i]);
                 if (char === '(' && !inText) { inText = true; buffer = ''; }
@@ -159,45 +147,157 @@ document.addEventListener('DOMContentLoaded', () => {
         await generateProject();
     });
 
-    // === Ações do resultado ===
+    // === Copiar ===
     copyBtn.addEventListener('click', () => {
-        const text = resultContent.innerText;
-        navigator.clipboard.writeText(text).then(() => {
+        navigator.clipboard.writeText(resultContent.innerText).then(() => {
             copyBtn.textContent = '✅ Copiado!';
             setTimeout(() => { copyBtn.textContent = '📋 Copiar Texto'; }, 2000);
         });
     });
 
-    downloadBtn.addEventListener('click', () => {
+    // === Download DOCX ===
+    downloadDocxBtn.addEventListener('click', async () => {
         const text = resultContent.innerText;
-        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'projeto-cultural.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        projectVersion++;
+
+        try {
+            const { Document, Packer, Paragraph, TextRun, HeadingLevel } = window.docx;
+
+            // Converter texto em parágrafos DOCX
+            const lines = text.split('\n');
+            const children = [];
+
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) {
+                    children.push(new Paragraph({ text: '' }));
+                    continue;
+                }
+
+                // Detectar títulos (linhas em CAPS ou que começam com número seguido de ponto)
+                const isHeading = /^\d+[\.\)]\s/.test(trimmed) || (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 80);
+
+                if (isHeading) {
+                    children.push(new Paragraph({
+                        text: trimmed,
+                        heading: HeadingLevel.HEADING_2,
+                        spacing: { before: 240, after: 120 },
+                    }));
+                } else {
+                    children.push(new Paragraph({
+                        children: [new TextRun({ text: trimmed, size: 24 })],
+                        spacing: { after: 80 },
+                    }));
+                }
+            }
+
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: children,
+                }],
+            });
+
+            const blob = await Packer.toBlob(doc);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `projeto-cultural-v${projectVersion}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // Salvar na planilha ao fazer download
+            await saveProject(text, `download-v${projectVersion}`);
+
+            downloadDocxBtn.textContent = '✅ DOCX baixado!';
+            setTimeout(() => { downloadDocxBtn.textContent = '⬇️ Baixar DOCX'; }, 2000);
+        } catch (error) {
+            console.error('Erro ao gerar DOCX:', error);
+            // Fallback: baixar como TXT
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `projeto-cultural-v${projectVersion}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            await saveProject(text, `download-v${projectVersion}`);
+        }
     });
 
+    // === Download PDF ===
+    downloadPdfBtn.addEventListener('click', async () => {
+        const text = resultContent.innerText;
+        projectVersion++;
+
+        try {
+            // Criar elemento temporário formatado para PDF
+            const tempDiv = document.createElement('div');
+            tempDiv.style.fontFamily = 'Arial, sans-serif';
+            tempDiv.style.fontSize = '12px';
+            tempDiv.style.lineHeight = '1.6';
+            tempDiv.style.color = '#000';
+            tempDiv.style.padding = '20px';
+            tempDiv.style.maxWidth = '700px';
+
+            const lines = text.split('\n');
+            for (const line of lines) {
+                const p = document.createElement('p');
+                const trimmed = line.trim();
+                const isHeading = /^\d+[\.\)]\s/.test(trimmed) || (trimmed === trimmed.toUpperCase() && trimmed.length > 3 && trimmed.length < 80);
+                if (isHeading) {
+                    p.style.fontWeight = 'bold';
+                    p.style.fontSize = '14px';
+                    p.style.marginTop = '16px';
+                }
+                p.textContent = line;
+                tempDiv.appendChild(p);
+            }
+
+            document.body.appendChild(tempDiv);
+
+            const opt = {
+                margin: [15, 15, 15, 15],
+                filename: `projeto-cultural-v${projectVersion}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opt).from(tempDiv).save();
+            document.body.removeChild(tempDiv);
+
+            // Salvar na planilha ao fazer download
+            await saveProject(text, `download-v${projectVersion}`);
+
+            downloadPdfBtn.textContent = '✅ PDF baixado!';
+            setTimeout(() => { downloadPdfBtn.textContent = '⬇️ Baixar PDF'; }, 2000);
+        } catch (error) {
+            console.error('Erro ao gerar PDF:', error);
+            alert('Erro ao gerar PDF. Tente o DOCX.');
+        }
+    });
+
+    // === Novo Projeto ===
     newProjectBtn.addEventListener('click', () => {
         resultSection.classList.add('hidden');
         conversationHistory = [];
+        projectVersion = 0;
+        currentMetadata = null;
         document.getElementById('formulario').scrollIntoView({ behavior: 'smooth' });
     });
 
     // === Refinamento ===
     refinementBtn.addEventListener('click', async () => {
         const feedback = refinementInput.value.trim();
-        if (!feedback) {
-            alert('Por favor, descreva o ajuste que deseja.');
-            return;
-        }
+        if (!feedback) { alert('Descreva o ajuste desejado.'); return; }
 
         const refineBtnText = refinementBtn.querySelector('.refine-btn-text');
         const refineBtnLoading = refinementBtn.querySelector('.refine-btn-loading');
-
         refinementBtn.disabled = true;
         refineBtnText.classList.add('hidden');
         refineBtnLoading.classList.remove('hidden');
@@ -205,22 +305,17 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             conversationHistory.push({
                 role: 'user',
-                content: `O usuário pediu o seguinte ajuste no projeto gerado:\n\n"${feedback}"\n\nPor favor, gere o projeto completo novamente com esse ajuste incorporado. Mantenha toda a estrutura e detalhes, aplicando apenas as mudanças solicitadas.`
+                content: `O usuário pediu o seguinte ajuste no projeto gerado:\n\n"${feedback}"\n\nGere o projeto completo novamente com esse ajuste incorporado. Mantenha toda a estrutura e detalhes, aplicando apenas as mudanças solicitadas.`
             });
 
             const response = await callAI(conversationHistory);
             conversationHistory.push({ role: 'assistant', content: response });
-
             resultContent.innerText = response;
             refinementInput.value = '';
-
-            // Salvar versão refinada
-            await saveProject(response, 'refinamento');
-
             resultContent.scrollIntoView({ behavior: 'smooth' });
         } catch (error) {
-            console.error('Erro no refinamento:', error);
-            alert(`Erro ao refinar o projeto: ${error.message}`);
+            console.error('Erro:', error);
+            alert(`Erro ao refinar: ${error.message}`);
             conversationHistory.pop();
         } finally {
             refinementBtn.disabled = false;
@@ -251,47 +346,31 @@ document.addEventListener('DOMContentLoaded', () => {
         const descricao = document.getElementById('descricao').value.trim();
         const infoAdicional = document.getElementById('info-adicional').value.trim();
 
-        // Ler arquivos
         let materiaisTexto = '';
         if (uploadedFiles.length > 0) {
             const fileContents = await Promise.all(uploadedFiles.map(readFileAsText));
-            materiaisTexto = fileContents
-                .map((content, i) => `--- Arquivo: ${uploadedFiles[i].name} ---\n${content}`)
-                .join('\n\n');
+            materiaisTexto = fileContents.map((c, i) => `--- ${uploadedFiles[i].name} ---\n${c}`).join('\n\n');
         }
 
-        const prompt = buildPrompt({
-            proponenteNome, tipoPessoaText, nomeProjeto, modalidade,
-            tipoProjeto, edital, localidade, publicoAlvo, valor,
-            descricao, infoAdicional, materiaisTexto
-        });
+        // Salvar metadata para uso no download
+        currentMetadata = { proponente: proponenteNome, tipoPessoa: tipoPessoaText, nomeProjeto: nomeProjeto || '(sugerido pela IA)', modalidade, tipoProjeto, edital, localidade, valor };
+
+        const prompt = buildPrompt({ proponenteNome, tipoPessoaText, nomeProjeto, modalidade, tipoProjeto, edital, localidade, publicoAlvo, valor, descricao, infoAdicional, materiaisTexto });
 
         conversationHistory = [
-            {
-                role: 'system',
-                content: 'Você é um especialista em elaboração de projetos culturais brasileiros. Gere projetos completos, profissionais e adequados aos editais solicitados. Responda sempre em português brasileiro. Quando o usuário pedir ajustes, gere o projeto completo novamente com as mudanças incorporadas.'
-            },
+            { role: 'system', content: 'Você é um especialista em elaboração de projetos culturais brasileiros. Gere projetos completos, profissionais e adequados aos editais solicitados. Responda sempre em português brasileiro. Quando o usuário pedir ajustes, gere o projeto completo novamente com as mudanças incorporadas.' },
             { role: 'user', content: prompt }
         ];
 
+        projectVersion = 0;
         setLoading(true);
 
         try {
             const response = await callAI(conversationHistory);
             conversationHistory.push({ role: 'assistant', content: response });
-
             resultContent.innerText = response;
             resultSection.classList.remove('hidden');
             resultSection.scrollIntoView({ behavior: 'smooth' });
-
-            // Salvar projeto nos registros
-            await saveProject(response, 'geração inicial', {
-                proponente: proponenteNome,
-                tipoPessoa: tipoPessoaText,
-                nomeProjeto: nomeProjeto || '(sugerido pela IA)',
-                modalidade, tipoProjeto, edital, localidade, valor
-            });
-
         } catch (error) {
             console.error('Erro:', error);
             alert(`Erro ao gerar o projeto: ${error.message}`);
@@ -319,14 +398,14 @@ ${nomeProjeto ? '- Nome do Projeto (definido pelo proponente): ' + nomeProjeto :
 ${infoAdicional ? '- Informações Adicionais: ' + infoAdicional : ''}`;
 
         if (materiaisTexto) {
-            prompt += `\n\nMATERIAIS DE APOIO ENVIADOS PELO PROPONENTE (use estas informações para enriquecer o projeto, especialmente currículo, histórico e dados relevantes):\n${materiaisTexto}`;
+            prompt += `\n\nMATERIAIS DE APOIO ENVIADOS PELO PROPONENTE:\n${materiaisTexto}`;
         }
 
         prompt += `\n\nINSTRUÇÕES:
 1. Pesquise em seu conhecimento sobre o edital/lei "${edital}" para entender os requisitos, critérios de seleção, e formato exigido.
 2. Elabore o projeto seguindo a estrutura padrão exigida pelo mecanismo de fomento indicado.
 3. O projeto deve ser coerente, bem justificado e adequado à realidade cultural brasileira.
-4. Se materiais de apoio foram fornecidos, use-os para enriquecer o currículo, histórico e contextualização.
+4. Se materiais de apoio foram fornecidos, use-os para enriquecer o currículo e contextualização.
 5. Use o nome do proponente "${proponenteNome}" na identificação e currículo do projeto.
 
 ESTRUTURA DO PROJETO (adapte conforme as exigências do edital):
@@ -334,90 +413,73 @@ ESTRUTURA DO PROJETO (adapte conforme as exigências do edital):
 1. IDENTIFICAÇÃO DO PROJETO
    - Nome do Projeto${nomeProjeto ? ': ' + nomeProjeto : ' (sugira um nome criativo)'}
    - Proponente: ${proponenteNome} (${tipoPessoaText})
-   - Modalidade
-   - Área cultural
+   - Modalidade / Área cultural
 
 2. APRESENTAÇÃO / SINOPSE
-   - Descrição clara e objetiva do projeto
 
 3. JUSTIFICATIVA
-   - Por que este projeto é relevante?
-   - Contexto cultural e social
-   - Lacuna que o projeto preenche
-   - Impacto esperado na comunidade
+   - Relevância, contexto cultural/social, lacuna preenchida, impacto
 
 4. OBJETIVOS
    - Objetivo Geral
    - Objetivos Específicos (mínimo 4)
 
-5. METAS
-   - Metas quantificáveis e mensuráveis (mínimo 5)
+5. METAS (mínimo 5, quantificáveis e mensuráveis)
 
-6. ETAPAS / CRONOGRAMA DE EXECUÇÃO
-   - Detalhamento mês a mês das atividades
+6. ETAPAS / CRONOGRAMA DE EXECUÇÃO (mês a mês)
 
-7. PÚBLICO-ALVO
-   - Descrição detalhada e estimativa de público
+7. PÚBLICO-ALVO (descrição detalhada + estimativa)
 
 8. PLANO DE DIVULGAÇÃO
-   - Estratégias de comunicação e marketing
 
-9. ACESSIBILIDADE
-   - Medidas de acessibilidade física, comunicacional e atitudinal
+9. ACESSIBILIDADE (física, comunicacional, atitudinal)
 
 10. DEMOCRATIZAÇÃO DO ACESSO
-    - Como o projeto garante acesso democrático à cultura
 
 11. CONTRAPARTIDA SOCIAL
-    - Ações de contrapartida à sociedade
 
 12. PLANO DE DISTRIBUIÇÃO / CIRCULAÇÃO (se aplicável)
 
-13. ORÇAMENTO DETALHADO
-    - Planilha orçamentária com itens, quantidades e valores
-    - Adequado ao valor solicitado
+13. ORÇAMENTO DETALHADO (itens, quantidades, valores — somar total pretendido)
 
 14. FICHA TÉCNICA
-    - Profissionais envolvidos e suas funções
 
 15. CURRÍCULO DO PROPONENTE / HISTÓRICO
-    - Baseado nas informações adicionais e materiais fornecidos
-
-IMPORTANTE:
-- Use linguagem formal e técnica adequada a editais culturais
-- Seja específico e detalhado em cada seção
-- Os valores do orçamento devem ser realistas e somar o total pretendido
-- Adapte o formato às exigências específicas do edital "${edital}"
-- Inclua métricas e indicadores sempre que possível
-- O cronograma deve ser realista (geralmente 6 a 12 meses)
 
 16. SUGESTÕES DE OUTROS EDITAIS E FUNDOS
-    - Ao final do projeto, sugira pelo menos 5 outros editais, leis de incentivo ou fundos de cultura (nacionais e internacionais) que possam ser compatíveis com este projeto
-    - Inclua editais internacionais/globais quando a obra puder atender os critérios (ex: estar em inglês, ser inédita, ter caráter inovador)
-    - Para cada sugestão, informe: nome do edital/fundo, país/região, link (se conhecido), requisitos principais, e por que o projeto se encaixa
-    - Considere fundos como: British Council, Goethe-Institut, Iberescena, UNESCO, APAP, National Endowment for the Arts, Fondo Nacional de las Artes, entre outros`;
+    - Sugira pelo menos 5 outros editais, leis de incentivo ou fundos (nacionais E internacionais) compatíveis com este projeto
+    - Inclua editais globais quando a obra puder atender os critérios (ex: estar em inglês, ser inédita, caráter inovador)
+    - Para cada sugestão: nome, país/região, link (se conhecido), requisitos principais, e por que o projeto se encaixa
+    - Considere: British Council, Goethe-Institut, Iberescena, UNESCO, APAP, National Endowment for the Arts, Fondo Nacional de las Artes, entre outros
+
+IMPORTANTE:
+- Linguagem formal e técnica adequada a editais culturais
+- Valores do orçamento realistas, somando o total pretendido
+- Adapte ao edital "${edital}"
+- Inclua métricas e indicadores
+- Cronograma realista (6 a 12 meses)`;
 
         return prompt;
     }
 
-    // === Chamada à IA via Cloudflare Worker ===
+    // === Chamada à IA (via Worker) ===
     async function callAI(messages) {
         const response = await fetch(WORKER_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                messages: messages,
-                model: 'gpt-4o',
-                max_tokens: 8000,
-                temperature: 0.7
-            })
+            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 8000, temperature: 0.7 })
         });
 
         if (!response.ok) {
             const error = await response.json().catch(() => ({}));
-            if (response.status === 401) throw new Error('Erro de autenticação. Entre em contato com o administrador.');
-            if (response.status === 429) { const msg = error?.error?.code === 'insufficient_quota' ? 'Serviço indisponível no momento. Entre em contato com o administrador.' : 'Muitas requisições. Aguarde um momento e tente novamente.'; throw new Error(msg); }
-            if (response.status === 402 || error?.error?.code === 'insufficient_quota') throw new Error('Serviço temporariamente indisponível. Tente mais tarde.');
+            if (response.status === 401) throw new Error('Erro de autenticação. Contate o administrador.');
+            if (response.status === 429) {
+                const msg = error?.error?.code === 'insufficient_quota'
+                    ? 'Serviço indisponível no momento. Contate o administrador.'
+                    : 'Muitas requisições. Aguarde e tente novamente.';
+                throw new Error(msg);
+            }
+            if (response.status === 503) throw new Error('Serviço temporariamente indisponível. Tente em alguns minutos.');
             throw new Error(error?.error?.message || `Erro ${response.status}. Tente novamente.`);
         }
 
@@ -425,30 +487,24 @@ IMPORTANTE:
         return data.choices[0].message.content;
     }
 
-    // === Salvar Projeto (Google Sheets) ===
-    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwu3z2lFA7oXVNTUG7HqclIykyicXvOk0Q-uK8zDKfD3O1BUu6tRBRhVFrKC9M_mvIT_Q/exec';
-
-    async function saveProject(projectContent, type, metadata = null) {
+    // === Salvar na Planilha (apenas no download) ===
+    async function saveProject(projectContent, type) {
         try {
             const record = {
                 id: generateId(),
                 timestamp: new Date().toISOString(),
                 type: type,
-                proponente: metadata?.proponente || '',
-                tipoPessoa: metadata?.tipoPessoa || '',
-                nomeProjeto: metadata?.nomeProjeto || '',
-                modalidade: metadata?.modalidade || '',
-                tipoProjeto: metadata?.tipoProjeto || '',
-                edital: metadata?.edital || '',
-                localidade: metadata?.localidade || '',
-                valor: metadata?.valor || '',
+                version: projectVersion,
+                proponente: currentMetadata?.proponente || '',
+                tipoPessoa: currentMetadata?.tipoPessoa || '',
+                nomeProjeto: currentMetadata?.nomeProjeto || '',
+                modalidade: currentMetadata?.modalidade || '',
+                tipoProjeto: currentMetadata?.tipoProjeto || '',
+                edital: currentMetadata?.edital || '',
+                localidade: currentMetadata?.localidade || '',
+                valor: currentMetadata?.valor || '',
                 content: projectContent
             };
-
-            // Backup local
-            const savedProjects = JSON.parse(localStorage.getItem('culturai_projects') || '[]');
-            savedProjects.push(record);
-            localStorage.setItem('culturai_projects', JSON.stringify(savedProjects));
 
             // Enviar para Google Sheets
             if (GOOGLE_SHEETS_URL) {
@@ -458,10 +514,10 @@ IMPORTANTE:
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(record)
                 });
-                console.log(`Projeto salvo no Google Sheets (${type}):`, record.id);
+                console.log(`Projeto salvo (${type}, v${projectVersion})`);
             }
         } catch (error) {
-            console.warn('Erro ao salvar registro do projeto:', error);
+            console.warn('Erro ao salvar:', error);
         }
     }
 
