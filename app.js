@@ -463,28 +463,40 @@ IMPORTANTE:
     }
 
     // === Chamada à IA (via Worker) ===
-    async function callAI(messages) {
-        const response = await fetch(WORKER_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 12000, temperature: 0.7 })
-        });
+    async function callAI(messages, retries = 3) {
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            const response = await fetch(WORKER_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages, model: 'gpt-4o', max_tokens: 12000, temperature: 0.7 })
+            });
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            if (response.status === 401) throw new Error('Erro de autenticação. Contate o administrador.');
-            if (response.status === 429) {
-                const msg = error?.error?.code === 'insufficient_quota'
-                    ? 'Serviço indisponível no momento. Contate o administrador.'
-                    : 'Muitas requisições. Aguarde e tente novamente.';
-                throw new Error(msg);
+            if (response.ok) {
+                const data = await response.json();
+                return data.choices[0].message.content;
             }
-            if (response.status === 503) throw new Error('Serviço temporariamente indisponível. Tente em alguns minutos.');
+
+            const error = await response.json().catch(() => ({}));
+
+            if (response.status === 401) throw new Error('Erro de autenticação. Contate o administrador.');
+
+            // Rate limit ou indisponível: retry com espera
+            if ((response.status === 429 || response.status === 503) && attempt < retries) {
+                const wait = attempt * 5; // 5s, 10s, 15s
+                console.log(`Tentativa ${attempt} falhou (${response.status}). Aguardando ${wait}s...`);
+                await new Promise(r => setTimeout(r, wait * 1000));
+                continue;
+            }
+
+            // Última tentativa falhou
+            if (response.status === 429) {
+                throw new Error(error?.error?.code === 'insufficient_quota'
+                    ? 'Serviço indisponível no momento. Contate o administrador.'
+                    : 'Muitas requisições. Aguarde 1 minuto e tente novamente.');
+            }
+            if (response.status === 503) throw new Error('Serviço ocupado. Aguarde 1 minuto e tente novamente.');
             throw new Error(error?.error?.message || `Erro ${response.status}. Tente novamente.`);
         }
-
-        const data = await response.json();
-        return data.choices[0].message.content;
     }
 
     // === Salvar na Planilha (apenas no download) ===
