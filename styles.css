@@ -44,7 +44,7 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 3rem;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -60,7 +60,7 @@ a:hover {
 }
 
 .logo-text {
-    font-size: 1.5rem;
+    font-size: 2rem;
     font-weight: 700;
     background: linear-gradient(135deg, var(--primary-light), var(--secondary));
     -webkit-background-clip: text;
