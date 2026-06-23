@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const prompt = buildPrompt({ proponenteNome, tipoPessoaText, nomeProjeto, modalidade, tipoProjeto, edital, localidade, publicoAlvo, valor, descricao, infoAdicional, materiaisTexto });
 
         conversationHistory = [
-            { role: 'system', content: 'Você é um especialista em elaboração de projetos culturais brasileiros. Gere projetos completos, profissionais e adequados aos editais solicitados. Responda sempre em português brasileiro. Quando o usuário pedir ajustes, gere o projeto completo novamente com as mudanças incorporadas.' },
+            { role: 'system', content: 'Você é um especialista em elaboração de projetos culturais brasileiros. Gere projetos completos, profissionais e adequados aos editais solicitados. Responda sempre em português brasileiro. Quando o usuário pedir ajustes, gere o projeto completo novamente com as mudanças incorporadas. REGRA DE ESTILO OBRIGATÓRIA: Escreva como um humano real escreveria — com naturalidade, fluidez e autenticidade. NUNCA use clichês típicos de IA como "vale ressaltar", "é importante destacar", "nesse sentido", "diante do exposto", "no cenário atual". NUNCA use travessões (—). Evite frases genéricas e vazias. Seja direto, concreto e específico. O texto deve parecer escrito por um produtor cultural experiente, não por uma máquina.' },
             { role: 'user', content: prompt }
         ];
 
