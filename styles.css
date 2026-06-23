@@ -44,9 +44,7 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 2rem 4rem;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 2rem 6%;
     width: 100%;
 }
 
@@ -72,7 +70,7 @@ a:hover {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 2rem;
+    gap: 3rem;
 }
 
 .nav-links a {
