@@ -44,9 +44,10 @@ a:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 3rem;
-    max-width: 1200px;
+    padding: 2rem 4rem;
+    max-width: 1400px;
     margin: 0 auto;
+    width: 100%;
 }
 
 .logo {
@@ -60,8 +61,8 @@ a:hover {
 }
 
 .logo-text {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 2.5rem;
+    font-weight: 800;
     background: linear-gradient(135deg, var(--primary-light), var(--secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -145,7 +146,8 @@ a:hover {
 
 /* Sections */
 .how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
@@ -217,7 +219,8 @@ a:hover {
 
 /* Form */
 .form.how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
@@ -314,7 +317,8 @@ a:hover {
 
 /* Result */
 .result.how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
@@ -460,7 +464,8 @@ a:hover {
 
 /* Refinement Section */
 .refinement.how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
@@ -573,7 +578,8 @@ a:hover {
 
 /* FAQ */
 .faq.how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
@@ -638,7 +644,8 @@ a:hover {
     }
 
     .how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
@@ -646,7 +653,8 @@ a:hover {
     }
 
     .form.how-it-works {
-    margin-top: 2rem;
+    margin-top: 6rem;
+    padding-top: 4rem;
 }
 
 .section {
