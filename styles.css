@@ -144,6 +144,10 @@ a:hover {
 }
 
 /* Sections */
+.how-it-works {
+    margin-top: 2rem;
+}
+
 .section {
     padding: 5rem 2rem;
     max-width: 1000px;
@@ -212,7 +216,11 @@ a:hover {
 }
 
 /* Form */
-.form-section {
+.form.how-it-works {
+    margin-top: 2rem;
+}
+
+.section {
     background: var(--bg-section);
     border-radius: var(--radius);
     padding: 4rem 2rem;
@@ -305,7 +313,11 @@ a:hover {
 }
 
 /* Result */
-.result-section {
+.result.how-it-works {
+    margin-top: 2rem;
+}
+
+.section {
     background: var(--bg-section);
     border-radius: var(--radius);
     padding: 3rem 2rem;
@@ -447,7 +459,11 @@ a:hover {
 }
 
 /* Refinement Section */
-.refinement-section {
+.refinement.how-it-works {
+    margin-top: 2rem;
+}
+
+.section {
     margin-top: 2.5rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
@@ -556,7 +572,11 @@ a:hover {
 }
 
 /* FAQ */
-.faq-section {
+.faq.how-it-works {
+    margin-top: 2rem;
+}
+
+.section {
     max-width: 800px;
 }
 
@@ -617,11 +637,19 @@ a:hover {
         gap: 1rem;
     }
 
-    .section {
+    .how-it-works {
+    margin-top: 2rem;
+}
+
+.section {
         padding: 3rem 1.5rem;
     }
 
-    .form-section {
+    .form.how-it-works {
+    margin-top: 2rem;
+}
+
+.section {
         padding: 2.5rem 1.5rem;
     }
 
