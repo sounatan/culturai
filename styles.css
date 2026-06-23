@@ -216,12 +216,7 @@ a:hover {
 }
 
 /* Form */
-.form.how-it-works {
-    margin-top: 6rem;
-    padding-top: 4rem;
-}
-
-.section {
+.form-section {
     background: var(--bg-section);
     border-radius: var(--radius);
     padding: 4rem 2rem;
@@ -314,12 +309,7 @@ a:hover {
 }
 
 /* Result */
-.result.how-it-works {
-    margin-top: 6rem;
-    padding-top: 4rem;
-}
-
-.section {
+.result-section {
     background: var(--bg-section);
     border-radius: var(--radius);
     padding: 3rem 2rem;
@@ -461,12 +451,7 @@ a:hover {
 }
 
 /* Refinement Section */
-.refinement.how-it-works {
-    margin-top: 6rem;
-    padding-top: 4rem;
-}
-
-.section {
+.refinement-section {
     margin-top: 2.5rem;
     padding-top: 2rem;
     border-top: 1px solid var(--border);
@@ -575,12 +560,7 @@ a:hover {
 }
 
 /* FAQ */
-.faq.how-it-works {
-    margin-top: 6rem;
-    padding-top: 4rem;
-}
-
-.section {
+.faq-section {
     max-width: 800px;
 }
 
@@ -641,21 +621,11 @@ a:hover {
         gap: 1rem;
     }
 
-    .how-it-works {
-    margin-top: 6rem;
-    padding-top: 4rem;
-}
-
-.section {
+    .section {
         padding: 3rem 1.5rem;
     }
 
-    .form.how-it-works {
-    margin-top: 6rem;
-    padding-top: 4rem;
-}
-
-.section {
+    .form-section {
         padding: 2.5rem 1.5rem;
     }
 
